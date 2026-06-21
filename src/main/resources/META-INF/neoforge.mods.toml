@@ -1,0 +1,29 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+issueTrackerURL="https://github.com/FoundationGames/BlastTravel/issues"
+
+[[mods]]
+modId="blasttravel"
+version="${file.jarVersion}"
+displayName="Blast Travel [NeoForge Port]"
+authors="FoundationGames, MacatMovie port"
+description='''Ride a cannon and launch yourself, TNT, anvils, and concrete powder.'''
+logoFile="assets/blasttravel/icon.png"
+
+[[dependencies.blasttravel]]
+modId="neoforge"
+type="required"
+versionRange="[21.1,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.blasttravel]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1,1.21.2)"
+ordering="NONE"
+side="BOTH"
+
+[[mixins]]
+config="blasttravel.mixins.json"

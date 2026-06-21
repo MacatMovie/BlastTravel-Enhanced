@@ -1,0 +1,16 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url = 'https://maven.neoforged.net/releases' }
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+// ModDevGradle adds required Minecraft/Mojang repositories from the project plugin.
+// FAIL_ON_PROJECT_REPOS breaks that, especially when building with Gradle 8.14.x.
+dependencyResolutionManagement { repositoriesMode = RepositoriesMode.PREFER_PROJECT }
+
+rootProject.name = 'BlastTravel-NeoForge-1.21.1'

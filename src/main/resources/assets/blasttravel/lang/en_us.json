@@ -1,0 +1,23 @@
+{
+    "container.blasttravel.cannon": "Cannon",
+    "item.blasttravel.cannon": "Cannon",
+    "entity.blasttravel.cannon": "Cannon",
+    "death.attack.blasttravel.cannon": "%s was knocked out by a flying %s",
+    "dialog.blasttravel.full_cannon": "Cannon is full!",
+    "dialog.blasttravel.no_gunpowder": "Cannon has no gunpowder!",
+    "mount.blasttravel.cannon.onboard": "Press %s to Exit, or %s to Fire",
+    "tooltip.blasttravel.cannon.hold_shift": "Hold [Shift] for Summary",
+    "tooltip.blasttravel.cannon.control.enter": "[Right-click] a placed cannon to enter.",
+    "tooltip.blasttravel.cannon.control.shoot": "Press [Spacebar] to shoot.",
+    "tooltip.blasttravel.cannon.control.exit": "Press [Shift] while inside the cannon to exit normally.",
+    "tooltip.blasttravel.cannon.control.open_ui": "[Shift + Right-click] a placed cannon to open its UI.",
+    "tooltip.blasttravel.cannon.slot1.title": "Gunpowder",
+    "tooltip.blasttravel.cannon.slot1.detail": "Input 1-64 gunpowder to decide how far the cannon shoots.",
+    "tooltip.blasttravel.cannon.slot1.detail2": "Doesn't consume gunpowder on use.",
+    "tooltip.blasttravel.cannon.slot2.title": "Chain",
+    "tooltip.blasttravel.cannon.slot2.detail": "A chained cannon locks its direction in place.",
+    "tooltip.blasttravel.cannon.slot3.title": "Ammo & Cosmetics",
+    "tooltip.blasttravel.cannon.slot3.detail": "Add supported blocks to change the cannon’s look.",
+    "tooltip.blasttravel.cannon.slot3.detail2": "TNT and anvils can be launched with a Redstone trigger.",
+    "tooltip.blasttravel.cannon.slot3.detail3": "Concrete powder adds colored launch particles."
+}

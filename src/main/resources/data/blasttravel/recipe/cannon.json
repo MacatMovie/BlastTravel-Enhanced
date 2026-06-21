@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "transportation",
+  "pattern": [
+    "  i",
+    "si ",
+    "ctl"
+  ],
+  "key": {
+    "i": { "item": "minecraft:iron_block" },
+    "s": { "item": "minecraft:string" },
+    "c": { "tag": "c:cobblestones" },
+    "t": { "item": "minecraft:stick" },
+    "l": { "tag": "minecraft:logs" }
+  },
+  "result": {
+    "id": "blasttravel:cannon",
+    "count": 1
+  }
+}
