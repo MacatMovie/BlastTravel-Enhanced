@@ -7,21 +7,22 @@ import foundationgames.blasttravel.client.particle.CannonBlastParticle;
 import foundationgames.blasttravel.client.screen.CannonScreen;
 import foundationgames.blasttravel.entity.CannonEntity;
 import net.minecraft.client.Minecraft;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 @EventBusSubscriber(modid = BlastTravel.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class BlastTravelClient {
     private BlastTravelClient() {}
 
     @SubscribeEvent
-    public static void registerMenuScreens(RegisterMenuScreensEvent event) {
-        event.register(BlastTravel.CANNON_SCREEN_HANDLER.get(), CannonScreen::new);
+    public static void clientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> MenuScreens.register(BlastTravel.CANNON_SCREEN_HANDLER.get(), CannonScreen::new));
     }
 
     @SubscribeEvent
@@ -42,7 +43,11 @@ public final class BlastTravelClient {
     @EventBusSubscriber(modid = BlastTravel.MOD_ID, value = Dist.CLIENT)
     public static final class GameEvents {
         @SubscribeEvent
-        public static void clientTick(ClientTickEvent.Post event) {
+        public static void clientTick(TickEvent.ClientTickEvent event) {
+            if (event.phase != TickEvent.Phase.END) {
+                return;
+            }
+
             var mc = Minecraft.getInstance();
             if (mc.player != null) {
                 if (mc.player.getVehicle() instanceof CannonEntity cannon) {

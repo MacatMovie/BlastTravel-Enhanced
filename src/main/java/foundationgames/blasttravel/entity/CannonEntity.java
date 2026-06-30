@@ -16,12 +16,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -42,6 +43,7 @@ import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
 
 public class CannonEntity extends Entity {
@@ -55,7 +57,7 @@ public class CannonEntity extends Entity {
     public static final CannonBehavior LAZULI = new CannonBehavior(Items.LAPIS_BLOCK, BlastTravel.id("textures/entity/cannon/lazuli.png")).register();
     public static final CannonBehavior AMETHYST = new CannonBehavior(Items.AMETHYST_BLOCK, BlastTravel.id("textures/entity/cannon/amethyst.png")).register();
     public static final CannonBehavior TNT = new EntityCannonBehavior(Items.TNT, BlastTravel.id("textures/entity/cannon/tnt.png"), EntityCannonBehavior::tntFactory).register();
-    public static final CannonBehavior ANVIL = new EntityCannonBehavior(Items.ANVIL, stack -> stack.is(ItemTags.ANVIL), BlastTravel.id("textures/entity/cannon/anvil.png"), EntityCannonBehavior::fallingBlockFactory).register();
+    public static final CannonBehavior ANVIL = new EntityCannonBehavior(Items.ANVIL, stack -> stack.is(Items.ANVIL) || stack.is(Items.CHIPPED_ANVIL) || stack.is(Items.DAMAGED_ANVIL), BlastTravel.id("textures/entity/cannon/anvil.png"), EntityCannonBehavior::fallingBlockFactory).register();
     public static final CannonBehavior POWDER = new ConcretePowderCannonBehavior().register();
 
     public static final EntityDataAccessor<Integer> BEHAVIOR = SynchedEntityData.defineId(CannonEntity.class, EntityDataSerializers.INT);
@@ -271,7 +273,7 @@ public class CannonEntity extends Entity {
                     firedPlayer = playerToLaunch;
                 }
 
-                this.level().playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 1, 1);
+                this.level().playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 1, 1);
                 for (var to : world.players()) {
                     BTNetworking.s2cFireCannon(to, this, firedPlayer, vel);
                 }
@@ -347,7 +349,7 @@ public class CannonEntity extends Entity {
 
     private void setChained(boolean chained) {
         if (chained != this.chained) {
-            this.level().playSound(null, this.blockPosition(), SoundEvents.ARMOR_EQUIP_CHAIN.value(), SoundSource.BLOCKS, 1, 1.2F);
+            this.level().playSound(null, this.blockPosition(), SoundEvents.ARMOR_EQUIP_CHAIN, SoundSource.BLOCKS, 1, 1.2F);
         }
         this.chained = chained;
     }
@@ -376,6 +378,11 @@ public class CannonEntity extends Entity {
     public ItemStack getPickResult() { return new ItemStack(BlastTravel.CANNON_ITEM.get()); }
 
     @Override
+    public Packet<ClientGamePacketListener> getAddEntityPacket() {
+        return NetworkHooks.getEntitySpawningPacket(this);
+    }
+
+    @Override
     public boolean isPickable() { return !this.isRemoved(); }
 
     @Override
@@ -389,15 +396,15 @@ public class CannonEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(BEHAVIOR, 0);
-        builder.define(CHAINED, false);
-        builder.define(BEHAVIOR_STACK, ItemStack.EMPTY);
+    protected void defineSynchedData() {
+        this.entityData.define(BEHAVIOR, 0);
+        this.entityData.define(CHAINED, false);
+        this.entityData.define(BEHAVIOR_STACK, ItemStack.EMPTY);
     }
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
-        ContainerHelper.loadAllItems(tag.getCompound("Items"), this.items, this.level().registryAccess());
+        ContainerHelper.loadAllItems(tag.getCompound("Items"), this.items);
         this.powered = tag.getBoolean("powered");
         this.alwaysModifiable = tag.getBoolean("alwaysModifiable");
         this.updateStateFromInventory();
@@ -406,7 +413,7 @@ public class CannonEntity extends Entity {
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
         var inv = new CompoundTag();
-        ContainerHelper.saveAllItems(inv, this.items, this.level().registryAccess());
+        ContainerHelper.saveAllItems(inv, this.items);
         tag.put("Items", inv);
         tag.putBoolean("powered", this.powered);
         tag.putBoolean("alwaysModifiable", this.alwaysModifiable);

@@ -85,9 +85,9 @@ public class CannonBehavior {
     public ResourceLocation headTexture(CannonEntity entity) {
         Player player = entity.getClientPlayer();
         if (player == null) {
-            return ResourceLocation.fromNamespaceAndPath("minecraft", "missingno");
+            return new ResourceLocation("minecraft", "missingno");
         }
-        return ResourceLocation.fromNamespaceAndPath("minecraft", "textures/entity/player/wide/steve.png");
+        return new ResourceLocation("minecraft", "textures/entity/player/wide/steve.png");
     }
 
     public Vector3f headColor(CannonEntity entity) {

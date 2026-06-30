@@ -1,0 +1,26 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="${mod_license}"
+issueTrackerURL="https://github.com/FoundationGames/BlastTravel/issues"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="Blast Travel [Forge Port]"
+authors="${mod_authors}"
+description='''${mod_description}'''
+logoFile="assets/blasttravel/icon.png"
+
+[[dependencies.${mod_id}]]
+modId="forge"
+mandatory=true
+versionRange="[47,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.2)"
+ordering="NONE"
+side="BOTH"

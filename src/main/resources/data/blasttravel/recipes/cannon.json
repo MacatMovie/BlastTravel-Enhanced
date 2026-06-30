@@ -9,12 +9,12 @@
   "key": {
     "i": { "item": "minecraft:iron_block" },
     "s": { "item": "minecraft:string" },
-    "c": { "tag": "c:cobblestones" },
+    "c": { "tag": "forge:cobblestone" },
     "t": { "item": "minecraft:stick" },
     "l": { "tag": "minecraft:logs" }
   },
   "result": {
-    "id": "blasttravel:cannon",
+    "item": "blasttravel:cannon",
     "count": 1
   }
 }

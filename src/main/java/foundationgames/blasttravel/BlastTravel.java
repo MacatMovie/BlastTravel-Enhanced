@@ -4,7 +4,7 @@ import foundationgames.blasttravel.entity.CannonEntity;
 import foundationgames.blasttravel.item.CannonItem;
 import foundationgames.blasttravel.screen.CannonScreenHandler;
 import foundationgames.blasttravel.util.BTNetworking;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -13,11 +13,12 @@ import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
-import net.minecraft.core.particles.SimpleParticleType;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.fml.common.Mod;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,10 +29,10 @@ public class BlastTravel {
     public static final String MOD_ID = "blasttravel";
     public static final Logger LOG = LoggerFactory.getLogger("Blast Travel");
 
-    public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, MOD_ID);
-    public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(BuiltInRegistries.MENU, MOD_ID);
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(BuiltInRegistries.ITEM, MOD_ID);
-    public static final DeferredRegister<net.minecraft.core.particles.ParticleType<?>> PARTICLE_TYPES = DeferredRegister.create(BuiltInRegistries.PARTICLE_TYPE, MOD_ID);
+    public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MOD_ID);
+    public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.MENU_TYPES, MOD_ID);
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
+    public static final DeferredRegister<net.minecraft.core.particles.ParticleType<?>> PARTICLE_TYPES = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, MOD_ID);
 
     public static final Supplier<EntityType<CannonEntity>> CANNON = ENTITY_TYPES.register("cannon", () ->
             EntityType.Builder.<CannonEntity>of(CannonEntity::new, MobCategory.MISC)
@@ -47,13 +48,15 @@ public class BlastTravel {
 
     public static final Supplier<SimpleParticleType> CANNON_BLAST = PARTICLE_TYPES.register("cannon_blast", () -> new SimpleParticleType(true));
 
-    public BlastTravel(IEventBus modBus) {
+    public BlastTravel() {
+        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+
         ENTITY_TYPES.register(modBus);
         MENU_TYPES.register(modBus);
         ITEMS.register(modBus);
         PARTICLE_TYPES.register(modBus);
 
-        modBus.addListener(BTNetworking::registerPayloads);
+        modBus.addListener(BTNetworking::registerMessages);
         modBus.addListener(this::addCreativeTabs);
     }
 
@@ -64,7 +67,7 @@ public class BlastTravel {
     }
 
     public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+        return new ResourceLocation(MOD_ID, path);
     }
 
     public static Component translatable(String key) {

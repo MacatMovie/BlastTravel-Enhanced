@@ -29,12 +29,12 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
         }
     }
 
-    @Inject(method = "setupRotations(Lnet/minecraft/client/player/AbstractClientPlayer;Lcom/mojang/blaze3d/vertex/PoseStack;FFFF)V", at = @At("HEAD"), cancellable = true)
-    private void blasttravel$modifyPlayerAngles(AbstractClientPlayer player, PoseStack poseStack, float bob, float yBodyRot, float partialTick, float scale, CallbackInfo ci) {
+    @Inject(method = "setupRotations(Lnet/minecraft/client/player/AbstractClientPlayer;Lcom/mojang/blaze3d/vertex/PoseStack;FFF)V", at = @At("HEAD"), cancellable = true)
+    private void blasttravel$modifyPlayerAngles(AbstractClientPlayer player, PoseStack poseStack, float bob, float yBodyRot, float partialTick, CallbackInfo ci) {
         if (player instanceof PlayerEntityDuck duck && duck.blasttravel$inCannonFlight()) {
             var vel = duck.blasttravel$getVelocityLerped(partialTick);
             double horizontal = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
-            super.setupRotations(player, poseStack, bob, 270 + ((float) Math.atan2(vel.z, vel.x) * Mth.RAD_TO_DEG), partialTick, scale);
+            super.setupRotations(player, poseStack, bob, 270 + ((float) Math.atan2(vel.z, vel.x) * Mth.RAD_TO_DEG), partialTick);
             poseStack.mulPose(Axis.XP.rotation((Mth.PI * 1.5F) + (float) Math.atan2(vel.y, horizontal)));
             ci.cancel();
         }
