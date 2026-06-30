@@ -60,7 +60,8 @@ public class CannonScreen extends AbstractContainerScreen<CannonScreenHandler> {
                     Component.translatable("tooltip.blasttravel.cannon.slot1.detail2").withStyle(ChatFormatting.GRAY));
             case 1 -> List.of(
                     Component.translatable("tooltip.blasttravel.cannon.slot2.title").withStyle(ChatFormatting.GOLD),
-                    Component.translatable("tooltip.blasttravel.cannon.slot2.detail").withStyle(ChatFormatting.GRAY));
+                    Component.translatable("tooltip.blasttravel.cannon.slot2.detail").withStyle(ChatFormatting.GRAY),
+                    Component.translatable("tooltip.blasttravel.cannon.slot2.detail2").withStyle(ChatFormatting.GRAY));
             case 2 -> List.of(
                     Component.translatable("tooltip.blasttravel.cannon.slot3.title").withStyle(ChatFormatting.GOLD),
                     Component.translatable("tooltip.blasttravel.cannon.slot3.detail").withStyle(ChatFormatting.GRAY),

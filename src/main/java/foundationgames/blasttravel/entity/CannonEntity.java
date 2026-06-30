@@ -128,8 +128,12 @@ public class CannonEntity extends Entity {
                 this.powered = hasPower;
             }
 
-            this.movementTick();
-            this.move(MoverType.SELF, this.getDeltaMovement());
+            if (this.chained) {
+                this.setDeltaMovement(Vec3.ZERO);
+            } else {
+                this.movementTick();
+                this.move(MoverType.SELF, this.getDeltaMovement());
+            }
         }
     }
 
@@ -348,6 +352,9 @@ public class CannonEntity extends Entity {
     private void setChained(boolean chained) {
         if (chained != this.chained) {
             this.level().playSound(null, this.blockPosition(), SoundEvents.ARMOR_EQUIP_CHAIN.value(), SoundSource.BLOCKS, 1, 1.2F);
+            if (chained) {
+                this.setDeltaMovement(Vec3.ZERO);
+            }
         }
         this.chained = chained;
     }
@@ -379,7 +386,21 @@ public class CannonEntity extends Entity {
     public boolean isPickable() { return !this.isRemoved(); }
 
     @Override
-    public boolean isPushable() { return true; }
+    public boolean isPushable() { return !this.chained; }
+
+    @Override
+    public void push(Entity entity) {
+        if (!this.chained) {
+            super.push(entity);
+        }
+    }
+
+    @Override
+    public void push(double x, double y, double z) {
+        if (!this.chained) {
+            super.push(x, y, z);
+        }
+    }
 
     @Override
     protected void positionRider(Entity passenger, MoveFunction callback) {
