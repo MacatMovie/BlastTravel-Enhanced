@@ -19,5 +19,6 @@
     "tooltip.blasttravel.cannon.slot3.title": "Ammo & Cosmetics",
     "tooltip.blasttravel.cannon.slot3.detail": "Add supported blocks to change the cannon’s look.",
     "tooltip.blasttravel.cannon.slot3.detail2": "TNT and anvils can be launched with a Redstone trigger.",
-    "tooltip.blasttravel.cannon.slot3.detail3": "Concrete powder adds colored launch particles."
+    "tooltip.blasttravel.cannon.slot3.detail3": "Concrete powder adds colored launch particles.",
+    "tooltip.blasttravel.cannon.slot2.detail2": "It also prevents collisions from moving it."
 }
