@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Supplier;
 
 public enum BTNetworking {;
-    private static final String PROTOCOL_VERSION = "1";
+    private static final String PROTOCOL_VERSION = "2";
 
     private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(BlastTravel.id("main"))
@@ -38,8 +38,9 @@ public enum BTNetworking {;
         CHANNEL.sendToServer(new StopCannonFlightPayload(thud));
     }
 
-    public static void s2cFireCannon(ServerPlayer to, CannonEntity cannon, @Nullable Player launched, Vec3 velocity) {
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> to), new FireCannonPayload(cannon.getId(), velocity.x, velocity.y, velocity.z, launched == null ? -1 : launched.getId()));
+    public static void s2cFireCannon(ServerPlayer to, CannonEntity cannon, @Nullable Player launched, Vec3 velocity, Vec3 launchPos) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> to), new FireCannonPayload(cannon.getId(), velocity.x, velocity.y, velocity.z,
+                launched == null ? -1 : launched.getId(), launchPos.x, launchPos.y, launchPos.z));
     }
 
     public static void s2cStopCannonFlight(ServerPlayer to, Player flying) {
@@ -131,17 +132,21 @@ public enum BTNetworking {;
         }
     }
 
-    public record FireCannonPayload(int cannonId, double x, double y, double z, int playerId) {
+    public record FireCannonPayload(int cannonId, double x, double y, double z, int playerId, double launchX, double launchY, double launchZ) {
         public static void encode(FireCannonPayload payload, FriendlyByteBuf buf) {
             buf.writeVarInt(payload.cannonId);
             buf.writeDouble(payload.x);
             buf.writeDouble(payload.y);
             buf.writeDouble(payload.z);
             buf.writeVarInt(payload.playerId);
+            buf.writeDouble(payload.launchX);
+            buf.writeDouble(payload.launchY);
+            buf.writeDouble(payload.launchZ);
         }
 
         public static FireCannonPayload decode(FriendlyByteBuf buf) {
-            return new FireCannonPayload(buf.readVarInt(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readVarInt());
+            return new FireCannonPayload(buf.readVarInt(), buf.readDouble(), buf.readDouble(), buf.readDouble(),
+                    buf.readVarInt(), buf.readDouble(), buf.readDouble(), buf.readDouble());
         }
     }
 

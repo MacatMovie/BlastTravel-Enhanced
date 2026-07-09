@@ -55,7 +55,7 @@ public class PlayerEntityMixin implements PlayerEntityDuck {
                 }
             }
 
-            if (self.isLocalPlayer() && this.blasttravel$ticksFlying > 4 &&
+            if (self.isLocalPlayer() && this.blasttravel$ticksFlying > 12 &&
                     (self.onGround() || self.isFallFlying() || self.getAbilities().flying || self.isInWater())) {
                 this.blasttravel$setCannonFlight(false);
                 BTNetworking.c2sStopCannonFlight(self.onGround());
