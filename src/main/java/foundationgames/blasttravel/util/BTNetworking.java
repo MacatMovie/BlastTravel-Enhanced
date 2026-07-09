@@ -29,8 +29,9 @@ public enum BTNetworking {;
         PacketDistributor.sendToServer(new StopCannonFlightPayload(thud));
     }
 
-    public static void s2cFireCannon(ServerPlayer to, CannonEntity cannon, @Nullable Player launched, Vec3 velocity) {
-        PacketDistributor.sendToPlayer(to, new FireCannonPayload(cannon.getId(), velocity.x, velocity.y, velocity.z, launched == null ? -1 : launched.getId()));
+    public static void s2cFireCannon(ServerPlayer to, CannonEntity cannon, @Nullable Player launched, Vec3 velocity, Vec3 launchPos) {
+        PacketDistributor.sendToPlayer(to, new FireCannonPayload(cannon.getId(), velocity.x, velocity.y, velocity.z,
+                launched == null ? -1 : launched.getId(), launchPos.x, launchPos.y, launchPos.z));
     }
 
     public static void s2cStopCannonFlight(ServerPlayer to, Player flying) {
@@ -38,7 +39,7 @@ public enum BTNetworking {;
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar registrar = event.registrar("1").optional();
+        PayloadRegistrar registrar = event.registrar("2").optional();
         registrar.playToServer(RequestFirePayload.TYPE, RequestFirePayload.STREAM_CODEC, BTNetworking::handleRequestFire);
         registrar.playToServer(StopCannonFlightPayload.TYPE, StopCannonFlightPayload.STREAM_CODEC, BTNetworking::handleStopCannonFlight);
         registrar.playToClient(FireCannonPayload.TYPE, FireCannonPayload.STREAM_CODEC, BTNetworking::handleFireCannonClient);
@@ -112,7 +113,7 @@ public enum BTNetworking {;
         public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
-    public record FireCannonPayload(int cannonId, double x, double y, double z, int playerId) implements CustomPacketPayload {
+    public record FireCannonPayload(int cannonId, double x, double y, double z, int playerId, double launchX, double launchY, double launchZ) implements CustomPacketPayload {
         public static final Type<FireCannonPayload> TYPE = new Type<>(payloadId("fire_cannon"));
         public static final StreamCodec<RegistryFriendlyByteBuf, FireCannonPayload> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
@@ -121,8 +122,12 @@ public enum BTNetworking {;
                     buf.writeDouble(payload.y);
                     buf.writeDouble(payload.z);
                     buf.writeVarInt(payload.playerId);
+                    buf.writeDouble(payload.launchX);
+                    buf.writeDouble(payload.launchY);
+                    buf.writeDouble(payload.launchZ);
                 },
-                buf -> new FireCannonPayload(buf.readVarInt(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readVarInt())
+                buf -> new FireCannonPayload(buf.readVarInt(), buf.readDouble(), buf.readDouble(), buf.readDouble(),
+                        buf.readVarInt(), buf.readDouble(), buf.readDouble(), buf.readDouble())
         );
 
         @Override

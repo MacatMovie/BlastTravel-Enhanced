@@ -17,6 +17,7 @@ public final class BTClientNetworking {
             var mc = Minecraft.getInstance();
             if (mc.level == null) return;
             Vec3 velocity = new Vec3(payload.x(), payload.y(), payload.z());
+            Vec3 launchPos = new Vec3(payload.launchX(), payload.launchY(), payload.launchZ());
             CannonEntity cannon = null;
             var cannonEntity = mc.level.getEntity(payload.cannonId());
             if (cannonEntity instanceof CannonEntity foundCannon) {
@@ -26,15 +27,7 @@ public final class BTClientNetworking {
             if (payload.playerId() >= 0) {
                 var entity = mc.level.getEntity(payload.playerId());
                 if (entity instanceof Player player) {
-                    player.getAbilities().flying = false;
-                    if (cannon != null) {
-                        var launchPos = cannon.getLaunchPosition();
-                        player.setPos(launchPos.x, launchPos.y, launchPos.z);
-                    }
-                    player.setDeltaMovement(velocity);
-                    player.hasImpulse = true;
-                    ((PlayerEntityDuck) player).blasttravel$setCannonFlightVelocity(velocity);
-                    ((PlayerEntityDuck) player).blasttravel$setCannonFlight(true);
+                    applyLaunch(player, cannon, launchPos, velocity);
                 }
             }
 
@@ -42,6 +35,20 @@ public final class BTClientNetworking {
                 cannon.fireClient();
             }
         });
+    }
+
+    private static void applyLaunch(Player player, CannonEntity cannon, Vec3 launchPos, Vec3 velocity) {
+        player.getAbilities().flying = false;
+        if (player.getVehicle() instanceof CannonEntity vehicle && (cannon == null || vehicle.getId() == cannon.getId())) {
+            player.stopRiding();
+        }
+
+        player.setPos(launchPos.x, launchPos.y, launchPos.z);
+        player.setDeltaMovement(velocity);
+        player.hasImpulse = true;
+        player.fallDistance = 0.0F;
+        ((PlayerEntityDuck) player).blasttravel$setCannonFlightVelocity(velocity);
+        ((PlayerEntityDuck) player).blasttravel$setCannonFlight(true);
     }
 
     public static void handleStopCannonFlightClient(BTNetworking.StopCannonFlightClientPayload payload, IPayloadContext context) {

@@ -17,6 +17,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -63,11 +64,13 @@ public class CannonEntity extends Entity {
     public static final EntityDataAccessor<ItemStack> BEHAVIOR_STACK = SynchedEntityData.defineId(CannonEntity.class, EntityDataSerializers.ITEM_STACK);
 
     public static final int MAX_ANIMATION = 12;
+    private static final double TINY_MOTION_SQR = 1.0E-7;
 
     private boolean chained;
     private boolean firing;
     private boolean powered;
     private boolean alwaysModifiable;
+    private boolean droppedOnBreak;
     private int animation = 0;
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(3, ItemStack.EMPTY);
@@ -194,13 +197,7 @@ public class CannonEntity extends Entity {
         if (attacker instanceof Player player && player != this.getFirstPassenger()) {
             if (player.mayBuild() && (player.isCreative() || player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem)) {
                 if (!this.level().isClientSide) {
-                    SimpleContainer temp = new SimpleContainer(this.inventory.getContainerSize());
-                    for (int i = 0; i < this.inventory.getContainerSize(); i++) temp.setItem(i, this.inventory.getItem(i));
-                    Containers.dropContents(this.level(), this.blockPosition(), temp);
-                    if (!player.isCreative()) {
-                        Containers.dropItemStack(this.level(), this.getX(), this.getY(), this.getZ(), new ItemStack(BlastTravel.CANNON_ITEM.get()));
-                    }
-                    this.remove(RemovalReason.KILLED);
+                    this.breakCannon(player);
                 }
                 this.level().playSound(null, this.blockPosition(), SoundEvents.STONE_BREAK, SoundSource.BLOCKS, 1, 0.8F);
                 this.level().levelEvent(2001, this.blockPosition(), net.minecraft.world.level.block.Block.getId(Blocks.ANVIL.defaultBlockState()));
@@ -212,10 +209,43 @@ public class CannonEntity extends Entity {
         return true;
     }
 
+    private void breakCannon(Player player) {
+        if (this.droppedOnBreak || this.isRemoved()) {
+            return;
+        }
+        this.droppedOnBreak = true;
+
+        if (this.isVehicle()) {
+            this.ejectPassengers();
+        }
+
+        SimpleContainer temp = new SimpleContainer(this.inventory.getContainerSize());
+        for (int i = 0; i < this.inventory.getContainerSize(); i++) {
+            ItemStack stack = this.items.get(i);
+            if (!stack.isEmpty()) {
+                temp.setItem(i, stack.copy());
+                this.items.set(i, ItemStack.EMPTY);
+            }
+        }
+        this.updateStateFromInventory();
+
+        Containers.dropContents(this.level(), this.blockPosition(), temp);
+        if (!player.isCreative()) {
+            Containers.dropItemStack(this.level(), this.getX(), this.getY(), this.getZ(), new ItemStack(BlastTravel.CANNON_ITEM.get()));
+        }
+
+        this.discard();
+    }
+
     private void movementTick() {
         var vel = this.getDeltaMovement();
-        this.setDeltaMovement(vel.x * 0.9, this.onGround() ? 0 : Math.max(vel.y - 0.07, -0.7), vel.z * 0.9);
+        var damped = new Vec3(vel.x * 0.9, this.onGround() ? 0 : Math.max(vel.y - 0.07, -0.7), vel.z * 0.9);
+        this.setDeltaMovement(clampTinyMotion(damped));
         this.hasImpulse = true;
+    }
+
+    private static Vec3 clampTinyMotion(Vec3 velocity) {
+        return velocity.lengthSqr() < TINY_MOTION_SQR ? Vec3.ZERO : velocity;
     }
 
     public ItemStack getBehaviorStack() {
@@ -257,6 +287,7 @@ public class CannonEntity extends Entity {
                 Player firedPlayer = null;
                 var behaviorStack = this.getBehaviorStack();
                 var vel = getDeltaMovement().add(this.getLaunchDirection().scale(Math.sqrt(gunpowder.getCount()) * 0.6));
+                var launchPos = this.getLaunchPosition();
 
                 this.getBehavior().onFired(this, behaviorStack, vel);
 
@@ -271,13 +302,13 @@ public class CannonEntity extends Entity {
                 }
 
                 if (playerToLaunch != null) {
-                    this.launchPlayer(playerToLaunch, vel);
+                    this.launchPlayer(playerToLaunch, vel, launchPos);
                     firedPlayer = playerToLaunch;
                 }
 
                 this.level().playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 1, 1);
                 for (var to : world.players()) {
-                    BTNetworking.s2cFireCannon(to, this, firedPlayer, vel);
+                    BTNetworking.s2cFireCannon(to, this, firedPlayer, vel, launchPos);
                 }
 
                 this.updateStateFromInventory();
@@ -291,12 +322,15 @@ public class CannonEntity extends Entity {
         }
     }
 
-    private void launchPlayer(Player player, Vec3 velocity) {
-        if (player.isPassenger()) {
+    private void launchPlayer(Player player, Vec3 velocity, Vec3 launchPos) {
+        ServerPlayer serverPlayer = player instanceof ServerPlayer foundServerPlayer ? foundServerPlayer : null;
+        if (player.getVehicle() == this) {
             player.stopRiding();
+            if (serverPlayer != null) {
+                serverPlayer.connection.send(new ClientboundSetPassengersPacket(this));
+            }
         }
 
-        var launchPos = this.getLaunchPosition();
         player.setPos(launchPos.x, launchPos.y, launchPos.z);
         player.setDeltaMovement(velocity);
         player.hasImpulse = true;
@@ -304,7 +338,7 @@ public class CannonEntity extends Entity {
         ((PlayerEntityDuck) player).blasttravel$setCannonFlightVelocity(velocity);
         ((PlayerEntityDuck) player).blasttravel$setCannonFlight(true);
 
-        if (player instanceof ServerPlayer serverPlayer) {
+        if (serverPlayer != null) {
             serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(serverPlayer));
         }
     }
