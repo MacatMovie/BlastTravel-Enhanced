@@ -1,5 +1,6 @@
 package foundationgames.blasttravel;
 
+import foundationgames.blasttravel.config.BTConfig;
 import foundationgames.blasttravel.entity.CannonEntity;
 import foundationgames.blasttravel.item.CannonItem;
 import foundationgames.blasttravel.screen.CannonScreenHandler;
@@ -15,7 +16,9 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -55,6 +58,10 @@ public class BlastTravel {
         MENU_TYPES.register(modBus);
         ITEMS.register(modBus);
         PARTICLE_TYPES.register(modBus);
+
+        BTConfig.ensureConfigFileExists();
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, BTConfig.COMMON_SPEC, BTConfig.FILE_NAME);
+        LOG.info("Registered Blast Travel config as config/{}", BTConfig.FILE_NAME);
 
         modBus.addListener(BTNetworking::registerMessages);
         modBus.addListener(this::addCreativeTabs);
