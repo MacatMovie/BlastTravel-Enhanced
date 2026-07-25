@@ -1,5 +1,6 @@
 package foundationgames.blasttravel;
 
+import foundationgames.blasttravel.config.BTConfig;
 import foundationgames.blasttravel.entity.CannonEntity;
 import foundationgames.blasttravel.item.CannonItem;
 import foundationgames.blasttravel.screen.CannonScreenHandler;
@@ -17,7 +18,9 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,11 +50,15 @@ public class BlastTravel {
 
     public static final Supplier<SimpleParticleType> CANNON_BLAST = PARTICLE_TYPES.register("cannon_blast", () -> new SimpleParticleType(true));
 
-    public BlastTravel(IEventBus modBus) {
+    public BlastTravel(IEventBus modBus, ModContainer modContainer) {
         ENTITY_TYPES.register(modBus);
         MENU_TYPES.register(modBus);
         ITEMS.register(modBus);
         PARTICLE_TYPES.register(modBus);
+
+        BTConfig.ensureConfigFileExists();
+        modContainer.registerConfig(ModConfig.Type.COMMON, BTConfig.COMMON_SPEC, BTConfig.FILE_NAME);
+        LOG.info("Registered Blast Travel config as config/{}", BTConfig.FILE_NAME);
 
         modBus.addListener(BTNetworking::registerPayloads);
         modBus.addListener(this::addCreativeTabs);

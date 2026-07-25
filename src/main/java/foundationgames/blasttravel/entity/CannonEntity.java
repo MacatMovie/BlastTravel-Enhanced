@@ -1,6 +1,7 @@
 package foundationgames.blasttravel.entity;
 
 import foundationgames.blasttravel.BlastTravel;
+import foundationgames.blasttravel.config.BTConfig;
 import foundationgames.blasttravel.entity.cannon.CannonBehavior;
 import foundationgames.blasttravel.entity.cannon.ConcretePowderCannonBehavior;
 import foundationgames.blasttravel.entity.cannon.EntityCannonBehavior;
@@ -286,7 +287,7 @@ public class CannonEntity extends Entity {
             if (gunpowder.is(Items.GUNPOWDER) && gunpowder.getCount() > 0) {
                 Player firedPlayer = null;
                 var behaviorStack = this.getBehaviorStack();
-                var vel = getDeltaMovement().add(this.getLaunchDirection().scale(Math.sqrt(gunpowder.getCount()) * 0.6));
+                var vel = getDeltaMovement().add(this.getLaunchDirection().scale(Math.sqrt(gunpowder.getCount()) * BTConfig.launchVelocityFactor()));
                 var launchPos = this.getLaunchPosition();
 
                 this.getBehavior().onFired(this, behaviorStack, vel);
