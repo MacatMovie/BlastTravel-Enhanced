@@ -104,7 +104,9 @@ public class CannonEntity extends Entity {
         super.tick();
 
         if (!this.chained && this.getFirstPassenger() instanceof Player player) {
-            this.setYRot(player.getYHeadRot());
+            // Aim from the player's actual view rotation. Using head rotation here can
+            // lag/jump while riding, especially in third person.
+            this.setYRot(player.getYRot());
             this.setXRot(player.getXRot());
         }
 

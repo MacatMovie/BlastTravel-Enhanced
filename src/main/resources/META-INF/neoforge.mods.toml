@@ -5,7 +5,7 @@ issueTrackerURL="https://github.com/FoundationGames/BlastTravel/issues"
 
 [[mods]]
 modId="blasttravel"
-version="1.0.3"
+version="1.0.4"
 displayName="Blast Travel [NeoForge Port]"
 authors="FoundationGames, MacatMovie port"
 description='''Ride a cannon and launch yourself, TNT, anvils, and concrete powder.'''
