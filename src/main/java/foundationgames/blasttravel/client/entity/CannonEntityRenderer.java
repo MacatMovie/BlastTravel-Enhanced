@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import foundationgames.blasttravel.BlastTravel;
 import foundationgames.blasttravel.entity.CannonEntity;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -86,12 +87,23 @@ public class CannonEntityRenderer extends EntityRenderer<CannonEntity> {
         poseStack.pushPose();
         var behavior = entity.getBehavior();
 
-        yaw = (180 + yaw) * Mth.DEG_TO_RAD;
-        float wheelAngle = yaw * 1.2F;
+        // For the local rider, render directly from the player's interpolated view
+        // rotation instead of the cannon entity's network/tick rotation. This keeps
+        // third-person aiming smooth and avoids wrap/correction jumps from looking
+        // like sudden spins. The entity rotation remains authoritative for gameplay.
+        float renderYaw = yaw;
+        float renderPitch = entity.getViewXRot(partialTick);
+        if (!entity.hasChains() && entity.getClientPlayer() instanceof AbstractClientPlayer player && player.isLocalPlayer()) {
+            renderYaw = player.getViewYRot(partialTick);
+            renderPitch = Math.min(18.0F, player.getViewXRot(partialTick));
+        }
+
+        float yawRadians = (180 + renderYaw) * Mth.DEG_TO_RAD;
+        float wheelAngle = yawRadians * 1.2F;
 
         this.leftWheel.xRot = wheelAngle;
         this.rightWheel.xRot = -wheelAngle;
-        this.cannon.xRot = (entity.getViewXRot(partialTick) + 90) * Mth.DEG_TO_RAD;
+        this.cannon.xRot = (renderPitch + 90) * Mth.DEG_TO_RAD;
 
         boolean renderCannon = entity.getFirstPassenger() != Minecraft.getInstance().player || !Minecraft.getInstance().options.getCameraType().isFirstPerson();
         this.cannon.visible = renderCannon;
@@ -99,7 +111,7 @@ public class CannonEntityRenderer extends EntityRenderer<CannonEntity> {
         this.fuse.visible = entity.hasFuse();
 
         poseStack.mulPose(Axis.ZP.rotationDegrees(180));
-        poseStack.mulPose(Axis.YP.rotation(yaw));
+        poseStack.mulPose(Axis.YP.rotation(yawRadians));
 
         float anim = entity.getAnimation(partialTick);
         poseStack.mulPose(Axis.XP.rotationDegrees(-5 * (-2 * (anim * anim * anim * anim * anim * anim * anim * anim) + 2 * (anim * anim))));
@@ -128,7 +140,13 @@ public class CannonEntityRenderer extends EntityRenderer<CannonEntity> {
             this.playerHead.visible = true;
             this.playerHead.xRot = this.cannon.xRot;
             color = behavior.headColor(entity);
-            this.playerHead.render(poseStack, buffer.getBuffer(RenderType.entityCutoutNoCull(behavior.headTexture(entity))), packedLight, OverlayTexture.NO_OVERLAY, color.x(), color.y(), color.z(), 1.0F);
+
+            ResourceLocation headTexture = behavior.headTexture(entity);
+            if (entity.getClientPlayer() instanceof AbstractClientPlayer player) {
+                headTexture = player.getSkinTextureLocation();
+            }
+
+            this.playerHead.render(poseStack, buffer.getBuffer(RenderType.entityCutoutNoCull(headTexture)), packedLight, OverlayTexture.NO_OVERLAY, color.x(), color.y(), color.z(), 1.0F);
         }
 
         this.resetModel();
