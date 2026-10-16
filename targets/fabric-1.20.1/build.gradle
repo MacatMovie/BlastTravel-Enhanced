@@ -1,0 +1,72 @@
+plugins {
+    id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+    id 'maven-publish'
+}
+apply from: '../../gradle/load-common.gradle'
+
+loom {
+    accessWidenerPath = file('src/main/resources/blasttravel.accesswidener')
+}
+
+group = project.mod_group_id
+version = project.mod_version
+
+base { archivesName = 'BlastTravel-Fabric-1.20.1' }
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    withSourcesJar()
+}
+
+sourceSets {
+    main {
+        java { srcDirs += ['../../shared/java/common'] }
+        resources { srcDirs += ['../../shared/resources'] }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.fabricmc.net/' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+}
+
+processResources {
+    def props = [
+            version: project.mod_version,
+            minecraft_version: project.minecraft_version,
+            loader_version: project.loader_version,
+            fabric_api_version: project.fabric_api_version,
+            mod_id: project.mod_id,
+            mod_name: project.mod_name,
+            mod_authors: project.mod_authors,
+            mod_description: project.mod_description,
+            mod_license: project.mod_license
+    ]
+    inputs.properties props
+    filesMatching(['fabric.mod.json', 'pack.mcmeta']) { expand props }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+
+tasks.named('remapJar').configure {
+    archiveFileName = "BlastTravel-Fabric-1.20.1-v${project.mod_version}.jar"
+}
+
+publishing {
+    publications {
+        create('mavenJava', MavenPublication) { from components.java }
+    }
+    repositories {
+        maven { url = uri("${project.projectDir}/mcmodsrepo") }
+    }
+}

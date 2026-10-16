@@ -1,0 +1,11 @@
+# Gradle / IDE
+.gradle/
+**/.gradle/
+**/build/
+**/run/
+**/run-server/
+**/run-data/
+**/.idea/
+*.iml
+logs/
+dist/

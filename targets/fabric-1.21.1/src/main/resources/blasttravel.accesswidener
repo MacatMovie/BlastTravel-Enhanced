@@ -1,0 +1,4 @@
+accessWidener v2 named
+
+# Preserve the private FallingBlockEntity constructor used when launching anvils.
+accessible method net/minecraft/world/entity/item/FallingBlockEntity <init> (Lnet/minecraft/world/level/Level;DDDLnet/minecraft/world/level/block/state/BlockState;)V

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "v${version}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": [
+    "FoundationGames",
+    "MacatMovie port"
+  ],
+  "contact": {
+    "issues": "https://github.com/FoundationGames/BlastTravel/issues"
+  },
+  "license": "${mod_license}",
+  "icon": "assets/blasttravel/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "foundationgames.blasttravel.BlastTravel"
+    ],
+    "client": [
+      "foundationgames.blasttravel.client.BlastTravelClient"
+    ]
+  },
+  "mixins": [
+    "blasttravel.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "accessWidener": "blasttravel.accesswidener"
+}
